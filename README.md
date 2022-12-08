@@ -13,7 +13,7 @@
    - 本机网络 Unix Domain Socket
    
 
-2. 性能相关
+2. 算法相关
    
    - [细胞分裂问题原创解法](./Algorithm/Cells_count.md)
 
