@@ -21,6 +21,8 @@
 4. C++杂记
 
    - [C++ lambda表达式](./Cpp/Cpp_Lambda.md)
+   
+   - [C++ const与指针](./Cpp/Cpp_Const_Pointer.md)
 
 
 5. 高并发
