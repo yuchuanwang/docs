@@ -6,9 +6,9 @@
 
 按照我的理解，负载均衡主要就是为了两个目的：并行处理(A忙不过来，B一起上)、防止单点失败(A忙废了，B顶上)。分别对应了高并发、高可用的核心诉求。
 
-负载均衡的算法有很多种，我尝试把我的理解表达出来。陆游老先生曾经曰过：纸上得来终觉浅，绝知此事要躬行。所以，用C++把它们实现一下。
+负载均衡的算法有很多种，我尝试把我的理解表达出来。
 
-
+陆游老先生曾经曰过：纸上得来终觉浅，绝知此事要躬行。所以，用C++把它们实现一下。
 
 #### 1. 轮询 Round Robin
 
@@ -82,7 +82,6 @@ private:
     // Stats, key is the server, value is the hit count
     std::unordered_map<std::string, int> stats; 
 };
-
 ```
 
 往这个LB添加5个服务器，然后发起一百万次请求：
@@ -118,8 +117,6 @@ Server Hit stats with round robin:
 ```
 
 ***<u>Note一下，本次内容重点在于试验负载均衡算法，不在于类的设计。所以，后面还会出现好几个相似的类，但我并没有去做任何的继承。实际工程应用的时候，需要考虑抽象、继承问题，以减少代码重复。</u>***
-
-
 
 #### 2. 加权轮询 Weighted Round Robin
 
@@ -207,7 +204,6 @@ private:
     // Stats, key is the server, value is the hit count
     std::unordered_map<std::string, int> stats; 
 };
-
 ```
 
 往这个LB添加5个服务器，并给与不同的权重，然后发起一百万次请求：
@@ -229,10 +225,7 @@ void TestWeightedRoundRobin()
 
     lb.PrintStats();
 }
-
 ```
-
-
 
 可以看到，每个服务器被分发的请求比例，跟它的权重比例是一样的：
 
@@ -244,8 +237,6 @@ Server Hit stats with weighted round robin:
 192.168.1.11: 100000
 192.168.1.14: 500000
 ```
-
-
 
 #### 3. 随机 Random
 
@@ -314,7 +305,6 @@ private:
     // Stats, key is the server, value is the hit count
     std::unordered_map<std::string, int> stats; 
 };
-
 ```
 
 往这个LB添加5个服务器，然后发起一百万次请求：
@@ -348,8 +338,6 @@ Server Hit stats with random:
 192.168.1.11: 199495
 192.168.1.12: 200674
 ```
-
-
 
 #### 4. 加权随机 Weighted Random
 
@@ -430,7 +418,6 @@ private:
     // Stats, key is the server, value is the hit count
     std::unordered_map<std::string, int> stats; 
 };
-
 ```
 
 往这个LB添加5个服务器，并给与不同的权重，然后发起一百万次请求：
@@ -465,39 +452,25 @@ Server Hit stats with weighted random:
 192.168.1.14: 499747
 ```
 
-
-
 #### 5. 源地址哈希 Source IP Hash
 
 根据客户端的IP地址，通过Hash算出个数值后，对后端服务器的总数取模，然后把请求分发给取模得到的服务器。
 
 这个代码也很简单，就不实现了。
 
-
-
 ---
 
 前面的这五种算法，在选择分发到哪个服务器时，都依赖于服务器的总数。
 
-而服务器总会有挂掉的时候。
+而服务器总会有挂掉的时候。一旦某个服务器挂了，意味着可用的服务器总数发生了变化(虽然前面的例子，都没有实现RemoveServer的接口)，那么被选中的服务器都会发生变化。
 
-一旦某个服务器挂了，意味着可用的服务器总数发生了变化(虽然前面的例子，都没有实现RemoveServer的接口)，那么被选中的服务器都会发生变化。
-
-这就带来了不一致的问题、每个请求都要重新计算。
-
-所以，后面的一致性哈希算法应运而生了。
-
-
+这就带来了不一致的问题、每个请求都要重新计算。所以，后面的一致性哈希算法应运而生了。
 
 题外话，技术也好、算法也好，都是为了解决某些具体的问题、场景而被发明出来的。
 
-理解了问题，才能更好的理解为什么会有这样的算法、解决方案。
+**理解了问题，有助于更好的理解为什么会有这样的算法、解决方案。**
 
 ---
-
-
-
-
 
 #### 6. 一致性哈希 Consistent Hashing
 
@@ -507,14 +480,189 @@ Server Hit stats with weighted random:
 
 参考代码如下：
 
+```cpp
+// Load Balance with Consistent Hashing
 
+#pragma once
 
+#include <vector>
+#include <string>
+#include <sstream>
+#include <map>
+#include <unordered_map>
+#include <iostream>
 
+class LoadBalanceConsistentHashing
+{
+public: 
+    LoadBalanceConsistentHashing(int vNum = 32)
+    {
+        virtualNum = vNum; 
+    }
 
+    ~LoadBalanceConsistentHashing()
+    {
+    }
 
+    bool AddServer(const std::string& srv)
+    {
+        servers.push_back(srv);
+
+        // Insert virtual nodes for each real server
+        for(int i = 0; i < virtualNum; i++)
+        {
+            // Compose name like: 192.168.1.10#1
+            std::stringstream srvName;
+            srvName << srv << "#" << i; 
+            unsigned int hashKey = std::hash<std::string>{}(srvName.str());
+            nodes.insert({hashKey, srv});
+        }
+
+        return true;
+    }
+
+    bool DeleteServer(const std::string& srv)
+    {
+        auto server = std::find(servers.begin(), servers.end(), srv);
+        if(server == servers.end())
+        {
+            std::cout << "Invalid server to delete. " << std::endl;
+            return false; 
+        }
+
+        // Delete from real servers
+        servers.erase(server);
+
+        // Delete virtual nodes for this real server
+        for(int i = 0; i < virtualNum; i++)
+        {
+            // Compose name like: 192.168.1.10#1
+            std::stringstream srvName;
+            srvName << srv << "#" << i; 
+            unsigned int hashKey = std::hash<std::string>{}(srvName.str());
+
+            // Find and delete
+            auto it = nodes.find(hashKey);
+            if(it != nodes.end()) 
+            {
+                nodes.erase(it);
+            }
+        }
+
+        return true; 
+    }
+
+    // Simulate a new request
+    bool NextRequest()
+    {
+        if(servers.empty())
+        {
+            std::cout << "Please add servers first. " << std::endl;
+            return false; 
+        }
+
+        // Find the node for this request
+        int val = rand(); 
+        unsigned int hashKey = std::hash<std::string>{}(std::to_string(val));
+        auto node = nodes.lower_bound(hashKey);
+        if(node == nodes.end())
+        {
+            // Use the first node if not found
+            node = nodes.begin();
+        }
+
+        // Update stats
+        stats[node->second]++;
+
+        return true; 
+    }
+
+    void ResetStats()
+    {
+        stats.clear();
+    }
+
+    void PrintStats() const
+    {
+        std::cout << "Server Hit stats with Consistent Hashing: ";
+        for(auto x : stats)
+        {
+            std::cout << std::endl;
+            std::cout << x.first << ": " << x.second;
+        }
+        std::cout << std::endl;
+    }
+
+private:
+    // Virtual nodes number for each real server
+    int virtualNum; 
+    // The real servers
+    std::vector<std::string> servers; 
+    // The virtual servers. Key is hash, value is the real server
+    std::map<unsigned int, std::string> nodes; 
+    // Stats, key is the real server, value is the hit count
+    std::unordered_map<std::string, int> stats; 
+};
+```
+
+往这个LB添加5个服务器，每个服务器默认的虚拟节点数为32个，然后发起一百万次请求：
+
+```cpp
+    LoadBalanceConsistentHashing lb;
+    lb.AddServer("192.168.1.10");
+    lb.AddServer("192.168.1.11");
+    lb.AddServer("192.168.1.12");
+    lb.AddServer("192.168.1.13");
+    lb.AddServer("192.168.1.14");
+
+    for(int i = 0; i < 1000000; i++)
+    {
+        lb.NextRequest();
+    }
+
+    lb.PrintStats();
+```
+
+可以看到，每个服务器被分发的请求总数比较均匀：
+
+```shell
+Server Hit stats with Consistent Hashing: 
+192.168.1.13: 200693
+192.168.1.14: 140848
+192.168.1.11: 180680
+192.168.1.12: 265031
+192.168.1.10: 212748
+```
+
+我在代码里，用的是C++自带的哈希函数。如果使用别的哈希算法，比如Fowler-Noll-Vo，还能得到更加均匀的分布。
+
+接下来，尝试把其中一个服务器删除，它附属的32个虚拟节点也会被删除。代码如下：
+
+```cpp
+    // Delete one server, and try again
+    lb.DeleteServer("192.168.1.12");
+    lb.ResetStats();
+    for(int i = 0; i < 1000000; i++)
+    {
+        lb.NextRequest();
+    }
+    lb.PrintStats();
+```
+
+得到的输出，依然比较均匀：
+
+```shell
+Server Hit stats with Consistent Hashing: 
+192.168.1.14: 205757
+192.168.1.10: 292805
+192.168.1.11: 241764
+192.168.1.13: 259674
+```
 
 #### 7. 最小连接数法 Least Connection
 
 检测所有后端服务器中，连接数最少的一个，然后把请求分发给它。连接数少，可以认为它处理的快，那么能者多劳，再多处理一点。
 
 这个需要去统计、获取后端服务器的连接数，然后才能判断。就不实现了。
+
+文章中的代码，全部上传在GitHub，欢迎访问。[GitHub - yuchuanwang/LoadBalance](https://github.com/yuchuanwang/LoadBalance)
