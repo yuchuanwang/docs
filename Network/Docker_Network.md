@@ -399,67 +399,7 @@ index.html           100% |*****************************************************
 
 #### 5. Overlay模型
 
-Docker通过Overlay模式，实现了对VXLAN的支持。这个模式的环境搭建比别的模式稍显复杂，主要是因为需要有一个地方来保存各个节点在overlay网络中的配置信息。一般是在另一个机器安装etcd或者Consul这种key-value数据库。
-
-偷懒起见，我直接使用了Docker自带的Swarm来搭建环境。准备了两台机器A、B。A身兼两职，既保存数据库，又运行容器。
-
-- 首先，在机器A，初始化swarm：
-  
-  ```shell
-  $ docker swarm init
-  Swarm initialized: current node (21xter8q7wuzgztarw549gwcd) is now a manager.
-  
-  To add a worker to this swarm, run the following command:
-  
-      docker swarm join --token SWMTKN-1-66m1hjyt1b0m63twlhc2wqq5vdzjblsjkys2wfj5ftm73z72mj-ay2r3vdc47ig0ltzorgnvimi4 192.168.0.105:2377
-  
-  To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.
-  ```
-
-- 换到机器B，Copy上面的join命令，加入集群：
-  
-  ```shell
-  $ docker swarm join --token SWMTKN-1-66m1hjyt1b0m63twlhc2wqq5vdzjblsjkys2wfj5ftm73z72mj-ay2r3vdc47ig0ltzorgnvimi4 192.168.0.105:2377
-  This node joined a swarm as a worker.
-  ```
-
-- 回到机器A，可以看到集群的情况：
-  
-  ```shell
-  $ docker node ls
-  ID                            HOSTNAME        STATUS    AVAILABILITY   MANAGER STATUS   ENGINE VERSION
-  21xter8q7wuzgztarw549gwcd *   ycwang-ubuntu   Ready     Active         Leader           23.0.4
-  l4u0mg241kwumep15d1qvcmtp     ycwang-ubuntu   Ready     Active                          23.0.4
-  ```
-
-- 在机器A上，可以看到Docker为Overlay模式，创建了两个新的网络，docker_gwbridge和ingress。后面运行的容器，通过docker_gwbridge与外部网络进行通信：
-  
-  ```shell
-  $ docker network ls
-  NETWORK ID     NAME              DRIVER    SCOPE
-  6dcf52ad912e   bridge            bridge    local
-  1b18a45de9c6   docker_gwbridge   bridge    local
-  fc504698f255   host              host      local
-  vw9yqgvpjjsg   ingress           overlay   swarm
-  4829db6948ad   none              null      local
-  ```
-
-- 在机器A上，为Docker创建Overlay网络：
-  
-  ```shell
-  $ docker network create --driver overlay vxnet1
-  mi0d3v64g2ntp2rznpqxquec5
-  ```
-
-- 在机器A上，创建服务，使用vxnet1这个网络，replicas 指定为 2：
-  
-  ```shell
-  docker service create --network vxnet1 --name test --replicas 2 busybox
-  ```
-  
-        https://dockertips.readthedocs.io/en/latest/docker-swarm/overlay-network.html[Swarm 的 overlay 网络详解 - Docker Tips](https://dockertips.readthedocs.io/en/latest/docker-swarm/overlay-network.html)
-
-[Multi-Host Overlay Networking with Etcd &mdash; Docker Kubernetes Lab 0.1 documentation](https://docker-k8s-lab.readthedocs.io/en/latest/docker/docker-etcd.html)
+TODO
 
 #### 6. Macvlan模型
 
