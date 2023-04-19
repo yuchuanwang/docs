@@ -2,9 +2,9 @@
 
 知识，学过了之后，把它总结、分享出来，能让自己对它的理解更加的深入。
 
-因此，把以前学的Docker容器网络模型归纳总结、并进行试验。
+因此，把以前学的Docker容器网络模型归纳总结、并进行实验。
 
-后续再继续对Kubernetes、CNI进行总结试验。
+后续再继续对Kubernetes、CNI进行总结实验。
 
 ---
 
@@ -12,7 +12,9 @@ Docker对网络的支持，可以用如下的思维导图来表示：
 
 ![DockerNetwork](https://github.com/yuchuanwang/docs/blob/main/Assets/DockerNetwork.png | width=400)
 
-下面，针对每种网络模型进行介绍与试验。
+包括了None、Host、Bridge、Container、Overlay、Macvlan、IPvlan七种模型。
+
+下面，针对每种网络模型进行介绍与实验。
 
 
 #### 一. 拔网线 - None模型
