@@ -1,4 +1,4 @@
-## Docker容器网络模型总结与试验
+## Docker容器网络的七种武器
 
 知识，学过了之后，把它总结、分享出来，能让自己对它的理解更加的深入。
 
@@ -10,13 +10,14 @@
 
 Docker对网络的支持，可以用如下的思维导图来表示：
 
-![DockerNetwork](https://github.com/yuchuanwang/docs/blob/main/Assets/DockerNetwork.png)
+![DockerNetwork](https://github.com/yuchuanwang/docs/blob/main/Assets/DockerNetwork.png =400x220)
 
 下面，针对每种网络模型进行介绍与试验。
 
-#### 1. None模型
 
-None，啥都没有。所以，这种模式下的容器，不带网卡，是一个封闭的环境。
+#### 一. 拔网线 - None模型
+
+None，啥都没有，类似于把网线给拔掉了。所以，这种模式下的容器，是一个封闭的环境。
 
 适用于安全性高、又不需要网络访问的情景。
 
@@ -36,7 +37,8 @@ $ docker run -it --rm --name=bbox --network=none busybox sh
 
 该容器除了一个localhost的网卡，并没有对外进行网络通信的设备。
 
-#### 2. Host模型
+
+#### 二. 寄生 - Host模型
 
 使用该模式的容器，共享Host宿主机(运行Docker的机器)的网络栈、网卡设备。
 
@@ -60,7 +62,7 @@ $ docker run -it --rm --name=bbox --network=host busybox sh
        valid_lft forever preferred_lft forever
 2: ens33: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel qlen 1000
     link/ether 00:0c:29:49:39:91 brd ff:ff:ff:ff:ff:ff
-    inet 192.168.111.128/24 brd 192.168.111.255 scope global dynamic noprefixroute ens33
+    inet **192.168.111.128**/24 brd 192.168.111.255 scope global dynamic noprefixroute ens33
        valid_lft 1242sec preferred_lft 1242sec
     inet6 fe80::72bf:3960:42cd:13cb/64 scope link noprefixroute
        valid_lft forever preferred_lft forever
@@ -85,7 +87,7 @@ $ ip addr
 2: ens33: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
     link/ether 00:0c:29:49:39:91 brd ff:ff:ff:ff:ff:ff
     altname enp2s1
-    inet 192.168.111.128/24 brd 192.168.111.255 scope global dynamic noprefixroute ens33
+    inet **192.168.111.128**/24 brd 192.168.111.255 scope global dynamic noprefixroute ens33
        valid_lft 1148sec preferred_lft 1148sec
     inet6 fe80::72bf:3960:42cd:13cb/64 scope link noprefixroute
        valid_lft forever preferred_lft forever
@@ -108,9 +110,10 @@ PING 8.8.8.8 (8.8.8.8): 56 data bytes
 64 bytes from 8.8.8.8: seq=3 ttl=53 time=35.723 ms
 ```
 
-#### 3. Bridge模型
 
-这是Docker在运行容器时，默认的网络模式。
+#### 三. 搭桥 - Bridge模型
+
+这是Docker在运行容器时，默认的网络模型。
 
 Docker在安装时，会自动在系统里面创建一个叫做docker0的网桥：
 
@@ -142,8 +145,8 @@ $ docker network inspect bridge
             "Options": null,
             "Config": [
                 {
-                    "Subnet": "172.17.0.0/16",
-                    "Gateway": "172.17.0.1"
+                    **"Subnet": "172.17.0.0/16",
+                    "Gateway": "172.17.0.1"**
                 }
             ]
         },
@@ -199,7 +202,8 @@ docker0            8000.0242653a0c37    no                vethe22e54f
 
 ![DockerBridge](https://github.com/yuchuanwang/docs/blob/main/Assets/Docker_Bridge.png)
 
-###### 同Host网络通信
+
+###### 1. 相同Host上的容器间网络通信
 
 在这种模式下，同一个Host上的不同容器，可以通过docker0直接通信。比如运行一个Nginx的容器：
 
@@ -247,7 +251,7 @@ $ docker network inspect bridge
                 "Name": "web",
                 "EndpointID": "d6f319d19fac52189c70fddb3a732f5b4081ff16fbe21e859c647ff8ff8ae7e6",
                 "MacAddress": "02:42:ac:11:00:02",
-                "IPv4Address": "172.17.0.2/16",
+                **"IPv4Address": "172.17.0.2/16",**
                 "IPv6Address": ""
             }
         },
@@ -269,9 +273,10 @@ index.html           100% |*****************************************************
 
 可以看到，BusyBox容器成功的访问了Nginx容器。
 
-###### 外部网络通信
 
-**a. 从内到外**：
+###### 2. 容器与外部网络通信
+
+**2.1. 从内到外**：
 
 Bridge模式下的容器，默认就可以访问外部网络。它依靠Host上的iptables，做了NAT地址转换。
 
@@ -294,7 +299,7 @@ PING 192.168.111.129 (192.168.111.129): 56 data bytes
 64 bytes from 192.168.111.129: seq=1 ttl=63 time=0.465 ms
 ```
 
-**b. 从外到内**：
+**2.2. 从外到内**：
 
 如果需要外部网络访问Bridge模式下的容器，可以通过端口映射功能。在运行容器时，指定Host端口A与容器端口B的映射。然后，通过访问：Host-IP:Host端口A，即可映射到：容器:容器端口B。
 
@@ -318,9 +323,10 @@ index.html                                              100%[===================
 ‘index.html’ saved [615/615]
 ```
 
-#### 4. Container模型
 
-这个模式我没看到官方的名字，名字瞎取的，但是在Kubernetes的Pod里面经常用。
+#### 四. 如影随形 - Container模型
+
+这个模式我没看到官方的名字，名字我瞎取的，但是在Kubernetes的Pod里面经常用。
 
 具体的做法，是在容器B运行时，指定：--network=container:容器A的名字或者ID。
 
@@ -357,8 +363,8 @@ $ docker network inspect bridge
             "da67b03b02c2e99fdaaa2fd75b7829c4005eba80a50f39404db4da8d8defa0e3": {
                 "Name": "web",
                 "EndpointID": "0e29b7473a8446100dc45a711536b0277ae0f911cb4c2decc7245511fd2dbb02",
-                "MacAddress": "02:42:ac:11:00:02",
-                "IPv4Address": "172.17.0.2/16",
+                **"MacAddress": "02:42:ac:11:00:02",**
+                **"IPv4Address": "172.17.0.2/16",**
                 "IPv6Address": ""
             }
         },
@@ -378,8 +384,8 @@ $ docker run -it --rm --name=bbox --network=container:web busybox sh
     inet 127.0.0.1/8 scope host lo
        valid_lft forever preferred_lft forever
 16: eth0@if17: <BROADCAST,MULTICAST,UP,LOWER_UP,M-DOWN> mtu 1500 qdisc noqueue
-    link/ether 02:42:ac:11:00:02 brd ff:ff:ff:ff:ff:ff
-    inet 172.17.0.2/16 brd 172.17.255.255 scope global eth0
+    link/ether **02:42:ac:11:00:02** brd ff:ff:ff:ff:ff:ff
+    inet **172.17.0.2**/16 brd 172.17.255.255 scope global eth0
        valid_lft forever preferred_lft forever
 ```
 
@@ -397,11 +403,78 @@ index.html           100% |*****************************************************
 
 这种模式除了K8S的Pod之外，还可以用在简易版的Web Server + App Server情景。
 
-#### 5. Overlay模型
 
-TODO
+#### 五. 套娃 - Overlay模型
 
-#### 6. Macvlan模型
+Docker通过Overlay模式，实现了对VXLAN的支持。这个模式的环境搭建比别的模式稍显复杂，主要是因为需要有一个地方来保存各个节点在overlay网络中的配置信息。一般是在另一个机器安装etcd或者Consul这种key-value数据库。
+
+偷懒起见，我直接使用了Docker自带的Swarm来搭建环境。准备了两台机器A、B。A身兼两职，既保存数据库，又运行容器。
+
+(悲剧的是，在实验之前，我手欠把Docker从23.0.3升级到23.0。4，然后Docker Swarm的集群就挂了，无法创建Service。相当不靠谱，难怪被K8S打趴下……)
+
+- 首先，在机器A，初始化swarm：
+ 
+  ```shell
+  ycwang@ycwang-ubuntu:~$ docker swarm init
+  Swarm initialized: current node (qygp7ymrfh5g0lgky10teck4r) is now a manager.
+ 
+  To add a worker to this swarm, run the following command:
+ 
+      docker swarm join --token SWMTKN-1-3rjaah348iir9pkrmssd4hrbtr5gkfpgw70m9l3v25mhqyll8d-33k4mggwe86kuidejitiprowo 192.168.111.128:2377
+ 
+  To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.
+  ```
+
+- 换到机器B，Copy上面的join命令，加入集群：
+ 
+  ```shell
+  ycwang@ycwang-ubuntu-slave:~$ docker swarm join --token SWMTKN-1-3rjaah348iir9pkrmssd4hrbtr5gkfpgw70m9l3v25mhqyll8d-33k4mggwe86kuidejitiprowo 192.168.111.128:2377
+  This node joined a swarm as a worker.
+  ```
+
+- 回到机器A，可以看到集群的情况：
+ 
+  ```shell
+  ycwang@ycwang-ubuntu:~$ docker node ls
+  ID                            HOSTNAME              STATUS    AVAILABILITY   MANAGER STATUS   ENGINE VERSION
+  qygp7ymrfh5g0lgky10teck4r *   ycwang-ubuntu         Ready     Active         Leader           23.0.4
+  sr637j4g891bsxo56tesv55y8     ycwang-ubuntu-slave   Ready     Active                          23.0.4
+  ```
+
+- 在机器A上，可以看到Docker为Overlay模式，创建了两个新的网络，docker_gwbridge和ingress。后面运行的容器，会通过docker_gwbridge与外部网络进行通信(南北向流量)：
+ 
+  ```shell
+  ycwang@ycwang-ubuntu:~$ docker network ls
+  NETWORK ID     NAME              DRIVER    SCOPE
+  51276c2e1741   bridge            bridge    local
+  596dbdd24c3a   docker_gwbridge   bridge    local
+  fc504698f255   host              host      local
+  tmbwbg86eph4   ingress           overlay   swarm
+  4829db6948ad   none              null      local
+  ```
+
+- 在机器A上，为Docker创建Overlay网络：
+ 
+  ```shell
+  ycwang@ycwang-ubuntu:~$ docker network create --driver=overlay vxlanA
+  thya4qliq95dh81yndfqpimwn
+  ```
+
+- 在机器A上，创建服务，使用vxlanA这个网络，replicas 指定为 2：
+ 
+  ```shell
+  ycwang@ycwang-ubuntu:~$ docker service create --network=vxlanA --name bboxes --replicas 2 busybox
+  ```
+到了这一步，我之前在Docker 23.0.3能成功的在两个Node上运行两个容器，并且通过VXLAN在它们之间发送东西向流量。但Docker升级到23.0.4后，这一步就走不下去了…… 
+
+根据之前版本的记忆，每个容器会带两张网卡。一张接在前面的docker_gwbridge网桥上，负责与外部网络的南北向流量。另一张负责VXLAN的东西向流量。
+
+如果从容器A ping 容器B，并用tcpdump在Host宿主机的网卡上抓包，可以清楚的看到被VXLAN封装过的ICMP数据包。
+
+这部分内容，等我把环境重新配置好了，再来补充。
+
+
+#### 六. 狡兔三窟 - Macvlan模型
 
 Macvlan是一种网卡虚拟化技术，将一张物理网卡(父接口)虚拟出多张网卡(子接口)。每个子接口有自己独立的 MAC 地址和 IP 地址。
 
@@ -448,7 +521,8 @@ index.html                                            100%[=====================
 物理网卡所连接的交换机，可能会限制同一个物理端口上的 MAC 地址数量。
 许多物理网卡上的 MAC地址数量也有限制。
 
-#### 7. IPvlan模型
+
+#### 七. 狡兔三窟Plus - IPvlan模型
 
 IPvlan是一个比较新的特性，Linux内核>= 4.2之后才可以稳定的使用。
 
@@ -456,7 +530,8 @@ IPvlan是一个比较新的特性，Linux内核>= 4.2之后才可以稳定的使
 
 IPvlan有两种模式：L2和L3模式。顾名思义，L2模式跟交换机有关，L3模式则跟路由器有关。
 
-**L2模式**
+
+**1. L2模式**
 
 IPvlan的L2模式，跟之前的Macvlan非常类似。容器的子接口与父接口在同一子网，父接口做为交换机来转发子接口的数据。如果是与外部网络通信，则依赖父接口进行路由转发。
 
@@ -504,7 +579,8 @@ PING 192.168.0.2 (192.168.0.2) 56(84) bytes of data.
 
 可以看到，容器的网络访问都是没问题的。
 
-**L3模式**
+
+**2. L3模式**
 
 这个模式下，容器跟Host宿主机可以不在同一个子网。该模式的配置，网上的资料比较少，Docker官网也是语焉不详的。
 
@@ -587,6 +663,6 @@ PING 192.168.0.2 (192.168.0.2) 56(84) bytes of data.
   $ sudo ip route add 10.0.2.0/24 via 192.168.1.105 dev eth1
   ```
 
-        这样，就可以实现IPvlan L3模式的容器与外部网络的通信。
+  这样，就可以实现IPvlan L3模式的容器与外部网络的通信。Sorry，我忘了我家里路由器的密码了，暂时没法登录实验……
 
 综合运用下来，感觉IPvlan模式应该比Macvlan模式更加实用，因为Macvlan拥有的功能，IPvlan的L2模式都有，而且还少了混杂模式、MAC地址数目的潜在问题。除此之外，IPvlan还多了L3模式的支持。
