@@ -413,8 +413,6 @@ Docker通过Overlay模式，实现了对VXLAN的支持。这个模式的环境�
 
 偷懒起见，我直接使用了Docker自带的Swarm来搭建环境。准备了两台机器A、B。A身兼两职，既保存数据库，又运行容器。
 
-(悲剧的是，在实验之前，我手欠把Docker从23.0.3升级到23.0。4，然后Docker Swarm的集群就挂了，无法创建Service。相当不靠谱，难怪被K8S打趴下……)
-
 - 首先，在机器A，初始化swarm：
  
   ```shell
@@ -423,7 +421,7 @@ Docker通过Overlay模式，实现了对VXLAN的支持。这个模式的环境�
  
   To add a worker to this swarm, run the following command:
  
-      docker swarm join --token SWMTKN-1-3rjaah348iir9pkrmssd4hrbtr5gkfpgw70m9l3v25mhqyll8d-33k4mggwe86kuidejitiprowo 192.168.111.128:2377
+      docker swarm join --token SWMTKN-1-3rjaah******rowo 192.168.111.128:2377
  
   To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.
   ```
@@ -431,7 +429,7 @@ Docker通过Overlay模式，实现了对VXLAN的支持。这个模式的环境�
 - 换到机器B，Copy上面的join命令，加入集群：
  
   ```shell
-  ycwang@ycwang-ubuntu-slave:~$ docker swarm join --token SWMTKN-1-3rjaah348iir9pkrmssd4hrbtr5gkfpgw70m9l3v25mhqyll8d-33k4mggwe86kuidejitiprowo 192.168.111.128:2377
+  ycwang@ycwang-ubuntu-slave:~$ docker swarm join --token SWMTKN-1-3rjaah******rowo 192.168.111.128:2377
   This node joined a swarm as a worker.
   ```
 
@@ -466,15 +464,94 @@ Docker通过Overlay模式，实现了对VXLAN的支持。这个模式的环境�
 - 在机器A上，创建服务，使用vxlanA这个网络，replicas 指定为 2：
  
   ```shell
-  ycwang@ycwang-ubuntu:~$ docker service create --network=vxlanA --name bboxes --replicas 2 busybox
+  ycwang@ycwang-ubuntu:~$ docker service create --network=vxlanA --name bboxes --replicas 2 busybox ping 8.8.8.8
+  q44lh7mwwpgbae7fleilgenk2
+  overall progress: 2 out of 2 tasks 
+  1/2: running   [==================================================>] 
+  2/2: running   [==================================================>] 
+  verify: Service converged
   ```
-到了这一步，我之前在Docker 23.0.3能成功的在两个Node上运行两个容器，并且通过VXLAN在它们之间发送东西向流量。但Docker升级到23.0.4后，这一步就走不下去了…… 
+  注意，busybox后面的ping 8.8.8.8，并不是为了让它去ping，目的只是让这个容器不要马上退出，否则Service会不停的重启这两个容器。别问我为什么知道的……  
 
-根据之前版本的记忆，每个容器会带两张网卡。一张接在前面的docker_gwbridge网桥上，负责与外部网络的南北向流量。另一张负责VXLAN的东西向流量。
+- 分别在两个机器上查看容器的信息：
 
-如果从容器A ping 容器B，并用tcpdump在Host宿主机的网卡上抓包，可以清楚的看到被VXLAN封装过的ICMP数据包。
+  ```shell
+  ycwang@ycwang-ubuntu:~$ docker ps 
+  CONTAINER ID   IMAGE            COMMAND          CREATED          STATUS          PORTS     NAMES
+  a9f2b06f0f9e   busybox:latest   "ping 8.8.8.8"   16 minutes ago   Up 16 minutes             bboxes.2.m6qqi8k75rvr8ukk4ll6jfrnp
+  ycwang@ycwang-ubuntu:~$ docker exec -it a9f2b06f0f9e sh
+  / # ip addr
+  1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue qlen 1000
+      link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+      inet 127.0.0.1/8 scope host lo
+         valid_lft forever preferred_lft forever
+  62: eth0@if63: <BROADCAST,MULTICAST,UP,LOWER_UP,M-DOWN> mtu 1450 qdisc noqueue 
+      link/ether 02:42:0a:00:01:21 brd ff:ff:ff:ff:ff:ff
+      inet 10.0.1.33/24 brd 10.0.1.255 scope global eth0
+         valid_lft forever preferred_lft forever
+  64: eth1@if65: <BROADCAST,MULTICAST,UP,LOWER_UP,M-DOWN> mtu 1500 qdisc noqueue 
+      link/ether 02:42:ac:13:00:03 brd ff:ff:ff:ff:ff:ff
+      inet 172.19.0.3/16 brd 172.19.255.255 scope global eth1
+         valid_lft forever preferred_lft forever
+  ```
+  
+  ```shell
+  ycwang@ycwang-ubuntu-slave:~$ docker ps -a
+  CONTAINER ID   IMAGE            COMMAND          CREATED          STATUS          PORTS     NAMES
+  04aacff98016   busybox:latest   "ping 8.8.8.8"   18 minutes ago   Up 18 minutes             bboxes.1.ky0fcmy5geudr2fothxxh05y3
+  ycwang@ycwang-ubuntu-slave:~$ docker exec -it 04aacff98016 sh
+  / # ip addr
+  1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue qlen 1000
+      link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+      inet 127.0.0.1/8 scope host lo
+         valid_lft forever preferred_lft forever
+  62: eth0@if63: <BROADCAST,MULTICAST,UP,LOWER_UP,M-DOWN> mtu 1450 qdisc noqueue 
+      link/ether 02:42:0a:00:01:20 brd ff:ff:ff:ff:ff:ff
+      inet 10.0.1.32/24 brd 10.0.1.255 scope global eth0
+         valid_lft forever preferred_lft forever
+  64: eth1@if65: <BROADCAST,MULTICAST,UP,LOWER_UP,M-DOWN> mtu 1500 qdisc noqueue 
+      link/ether 02:42:ac:13:00:03 brd ff:ff:ff:ff:ff:ff
+      inet 172.19.0.3/16 brd 172.19.255.255 scope global eth1
+         valid_lft forever preferred_lft forever
+  ```
 
-这部分内容，等我把环境重新配置好了，再来补充。
+  可以发现，每个容器会带两张网卡。
+  
+  eth1 - 172.19.0.3接在前面的docker_gwbridge网桥上，负责与外部网络的南北向流量。通过docker network inspect docker_gwbridge可以确认这个信息。
+  
+  etho - 10.0.1.32/24，10.0.1.33/24，属于vxlanA网络，负责VXLAN内部的东西向流量。通过docker network inspect vxlanA可以确认这个信息。
+
+- 从容器A ping 容器B：
+  ```shell
+  / # ping 10.0.1.32
+  PING 10.0.1.32 (10.0.1.32): 56 data bytes
+  64 bytes from 10.0.1.32: seq=0 ttl=64 time=0.735 ms
+  64 bytes from 10.0.1.32: seq=1 ttl=64 time=0.556 ms
+  ```
+  
+  两个容器之间是可以通信的。此时，用tcpdump在Host宿主机的网卡上抓包：
+  ```shell
+  $ sudo tcpdump -i ens33 udp port 4789 -s 0 -X -nnn -vvv
+  tcpdump: listening on ens33, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+  15:50:57.566431 IP (tos 0x0, ttl 64, id 34769, offset 0, flags [none], proto UDP (17), length 134)
+      192.168.111.128.42627 > 192.168.111.129.4789: [bad udp cksum 0x60d6 -> 0xb9a9!] VXLAN, flags [I] (0x08), vni 4097
+  IP (tos 0x0, ttl 64, id 30207, offset 0, flags [DF], proto ICMP (1), length 84)
+      10.0.1.33 > 10.0.1.32: ICMP echo request, id 23, seq 0, length 64
+	  0x0000:  4500 0086 87d1 0000 4011 9243 c0a8 6f80  E.......@..C..o.
+	  0x0010:  c0a8 6f81 a683 12b5 0072 60d6 0800 0000  ..o......r`.....
+	  0x0020:  0010 0100 0242 0a00 0120 0242 0a00 0121  .....B.....B...!
+	  0x0030:  0800 4500 0054 75ff 4000 4001 ae69 0a00  ..E..Tu.@.@..i..
+	  0x0040:  0121 0a00 0120 0800 ae96 0017 0000 bbd5  .!..............
+	  0x0050:  8d7c 0000 0000 0000 0000 0000 0000 0000  .|..............
+	  0x0060:  0000 0000 0000 0000 0000 0000 0000 0000  ................
+	  0x0070:  0000 0000 0000 0000 0000 0000 0000 0000  ................
+	  0x0080:  0000 0000 0000                           ......
+  ```
+  可以清楚的看到从容器A - 10.0.1.33 到容器B - 10.0.1.32的ICMP数据包，被VNI为4097的VXLAN封装。
+  
+  封装后，变成了从Host A - 192.168.111.128.42627到Host B - 192.168.111.129.4789的UDP数据包。
+  
+通过这个模型，实现了容器间的直连，虚拟的二层直连。Overlay模型也成了许多云厂商采用的实现方案。
 
 
 #### 六. 狡兔三窟 - Macvlan模型
