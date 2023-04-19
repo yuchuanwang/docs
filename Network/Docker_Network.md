@@ -10,7 +10,8 @@
 
 Docker对网络的支持，可以用如下的思维导图来表示：
 
-![DockerNetwork](https://github.com/yuchuanwang/docs/blob/main/Assets/DockerNetwork.png | width=400)
+<img src="https://github.com/yuchuanwang/docs/blob/main/Assets/DockerNetwork.png" width="50%" height="50%">
+
 
 包括了None、Host、Bridge、Container、Overlay、Macvlan、IPvlan七种模型。
 
