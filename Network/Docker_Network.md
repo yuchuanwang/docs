@@ -10,7 +10,7 @@
 
 Docker对网络的支持，可以用如下的思维导图来表示：
 
-![DockerNetwork](https://github.com/yuchuanwang/docs/blob/main/Assets/DockerNetwork.png =400x220)
+![DockerNetwork](https://github.com/yuchuanwang/docs/blob/main/Assets/DockerNetwork.png | width=400)
 
 下面，针对每种网络模型进行介绍与试验。
 
