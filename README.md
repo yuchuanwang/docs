@@ -43,4 +43,13 @@
    - [负载均衡](./Cpp/Cpp_Load_Balance.md)
 
 
-6. eBPF相关
+6. PyTorch深度学习
+   - 线性回归
+   - 多项式回归
+   - 分类
+   - CNN
+   - RNN
+   - 迁移学习
+   - Captch识别
+
+7. eBPF相关
