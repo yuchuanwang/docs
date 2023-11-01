@@ -20,7 +20,7 @@ ARP协议用来根据IP地址获取MAC地址。在链路层传输报文时，依
 
 复杂的回答则如下图所示：
 
-<img src="https://github.com/yuchuanwang/docs/blob/main/Assets/Ping_Flow.png" width="50%" height="50%">
+<img src="https://github.com/yuchuanwang/docs/blob/main/Assets/Ping_Flow.png" width="100%" height="100%">
 
 
 具体的文字，我就不从流程图里copy出来了。只能说，流程其实还是挺复杂的，里面涉及到ARP表、交换机上的MAC地址表、路由表这计算机网络的三大表格；以及在报文传输过程中，源MAC地址、目的MAC地址一直在变化，而源IP、目的IP不变的过程。
