@@ -44,12 +44,18 @@
 
 
 6. PyTorch深度学习
-   - 线性回归
-   - 多项式回归
-   - 分类
-   - CNN
-   - 迁移学习与微调
-   - RNN
-   - Captch识别
+
+   - [线性回归](./PyTorch/01_LinearRegression.md)
+   
+   - [多项式回归](./PyTorch/02_PolyRegression.md)
+   
+   - [全连接层实现图像分类](./PyTorch/03_ImageClassificationByFC.md)
+
+   - [CNN实现图像分类](./PyTorch/04_ImageClassificationByCNN.md)
+  
+   - ResNet迁移学习与微调实现图像分类
+   
+   - LSTM实现文本分类
+   
 
 7. eBPF相关
