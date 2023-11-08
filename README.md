@@ -43,7 +43,7 @@
    - [负载均衡](./Cpp/Cpp_Load_Balance.md)
 
 
-6. PyTorch深度学习
+6. PyTorch从精通到入门
 
    - [线性回归](./PyTorch/01_LinearRegression.md)
    
