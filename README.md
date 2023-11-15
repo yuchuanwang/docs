@@ -36,6 +36,8 @@
    - [C++ 友元与运算符重载那些事](./Cpp/Cpp_Friend_Operator.md)
 
    - [C++ 线程池](./Cpp/Cpp_ThreadPool.md)
+  
+   - [C语言与C++语言混合编程的方法](./Cpp/Cpp_Mix_C.md)
    
 
 5. 高并发高可用
