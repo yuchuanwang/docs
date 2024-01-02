@@ -41,7 +41,7 @@
   
    - [gRPC C++快速编译与上手](./Cpp/Cpp_gRPC.md)
   
-   - [极简C++ Redis封装](https://github.com/yuchuanwang/RedisClient)
+   - [极简C++ Redis封装](./Cpp/Cpp_Redis.md)
    
 
 5. 高并发高可用
@@ -64,4 +64,7 @@
    - [基于LSTM实现文本分类](./PyTorch/06_CommentClassificationByLSTM.md)
    
 
-7. eBPF相关
+7. eBPF/XDP相关
+
+   Coming soon...
+   
