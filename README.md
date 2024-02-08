@@ -62,6 +62,10 @@
    - [基于ResNet迁移学习和微调，实现图像分类](./PyTorch/05_ImageClassificationByResNet.md)
    
    - [基于LSTM实现文本分类](./PyTorch/06_CommentClassificationByLSTM.md)
+  
+   - [变长验证码识别](https://github.com/yuchuanwang/DeepLearning/blob/main/CaptchaHacker.py)
+  
+   - [本地运行Microsoft/phi-2模型](./PyTorch/Microsoft-phi-2.md)
    
 
 7. eBPF/XDP相关
