@@ -66,6 +66,9 @@
    - [变长验证码识别](https://github.com/yuchuanwang/DeepLearning/blob/main/CaptchaHacker.py)
   
    - [本地运行Microsoft/phi-2模型](./PyTorch/Microsoft-phi-2.md)
+  
+   - [用OpenAI的API实现基本的ChatGPT](./PyTorch/MiniChatGPT.md)
+
    
 
 7. eBPF/XDP相关
