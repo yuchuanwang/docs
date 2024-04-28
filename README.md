@@ -49,7 +49,7 @@
    - [负载均衡](./Cpp/Cpp_Load_Balance.md)
 
 
-6. [PyTorch从精通到入门](https://github.com/yuchuanwang/DeepLearning)
+6. [AI](https://github.com/yuchuanwang/DeepLearning)
 
    - [线性回归](./PyTorch/01_LinearRegression.md)
    
@@ -69,7 +69,9 @@
   
    - [用OpenAI的API实现基本的ChatGPT](./PyTorch/MiniChatGPT.md)
 
-   
+   - [从零开始训练大语言模型的最佳实践](./PyTorch/Training_LLMs.md)
+  
+      
 
 7. eBPF/XDP相关
 
