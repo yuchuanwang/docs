@@ -22,7 +22,7 @@ RAG，是三个单词的缩写：Retrieval、Augmented、Generation，代表了�
 
 #### 1. 准备工作
 
-在开始写代码之前，需要先从HuggingFace下载模型文件。我选用的是Meta-Llama-3-8B-Instruct。国内用户可以从https://hf-mirror.com/下载，网络比HuggingFace.com稳定得多。
+在开始写代码之前，需要先从HuggingFace下载模型文件。我选用的是Meta-Llama-3-8B-Instruct。国内用户可以从hf-mirror.com下载，网络比HuggingFace.com稳定得多。
 
 另外，还需要下载Embeddings模型，用于将文本转为embeddings，然后才能保存到向量数据库，并进行后续的相似性查找。我选用的是微软的multilingual-e5-large-instruct模型。也可以用北大的bge-m3模型。但这两个Embeddings模型的参数和相关度数值会有比较大的差异，需要去试验、调整代码里面的参数。
 
