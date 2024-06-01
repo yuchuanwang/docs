@@ -71,7 +71,7 @@
 
    - [从零开始训练大语言模型的最佳实践](./PyTorch/Training_LLMs.md)
 
-   - [Llama 3 + LangChain + HugginFace 实现本地部署RAG](./PyTorch/Llama3_RAG.md)
+   - [Llama 3 + LangChain + HuggingFace 实现本地部署RAG](./PyTorch/Llama3_RAG.md)
       
 
 7. eBPF/XDP相关
