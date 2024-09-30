@@ -505,7 +505,8 @@ def gelu(x):
 
 *注：这个功能对GPU有要求，比如我实验的P100就不支持……*
 
-**使用混合精度**：Automatic Mixed Precision(AMP)，即自动混合精度。详细的官方介绍在这里：https://pytorch.org/tutorials/recipes/recipes/amp_recipe.html。通过将计算精度从fp32降低到fp16或者bf16，可以加速计算速度、减少内存使用；尤其在具有TensorCore的设备上，会有更突出的效果：
+**使用混合精度**：Automatic Mixed Precision(AMP)，即自动混合精度。详细的官方介绍在这里：https://pytorch.org/tutorials/recipes/recipes/amp_recipe.html
+通过将计算精度从fp32降低到fp16或者bf16，可以加速计算速度、减少内存使用；尤其在具有TensorCore的设备上，会有更突出的效果：
 
 ```python
 with torch.autocast(device_type='cuda', dtype=torch.float16):
