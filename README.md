@@ -8,7 +8,7 @@
    
    - [缓存 - 伪共享](./Performance/False_sharing.md)
       
-   - 本机网络 Unix Domain Socket
+   - [AI训练性能优化](./Performance/PyTorch_Profiler_TensorBoard.md)
    
 
 2. 算法相关
