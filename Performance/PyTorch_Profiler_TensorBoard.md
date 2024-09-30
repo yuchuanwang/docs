@@ -2,7 +2,7 @@
 
 在AI模型的训练过程中，每一步训练基本上会包括如下的过程：
 
-CPU: DataLoader Load Data --> CPU: Compile Operators -- Host2Device (Ops and Data) --> Device: Forward --> NIC: Collective Communication --> Device: BP --Device2Host--> CPU: Save Checkpoint
+CPU: DataLoader Load Data --> CPU: Compile Operators -- Host2Device (Ops and Data) --> Device: Forward --> NIC: Collective Communication --> Device: BP --> Device2Host CPU: Save Checkpoint
 
 在这种异构、异步、集群的环境中，性能问题可能发生在图中的每个环节。为了定位、优化性能问题，需要进行采集、定位、优化，整体是比较复杂的过程。
 
@@ -481,7 +481,7 @@ torch.tensor(..., device='cuda')
 
 **避免在前向计算、反向传播的代码中创建对象、或者复制数据**：在实现代码的时候，我们有时候会不经意的在前向计算，或者反向传播的相关代码中，创建一些对象，或者执行一些数据的复制。虽然从代码上来看，它们只出现一次，但在训练过程中，它们会被反复的执行，从而带来很严重的性能问题。所以，尽可能把这些对象、数据的的操作移到到别的地方，比如说模型的构造函数，让它们只在开始的时刻执行一次。
 
-**Device2Host问题的信号**：当在Profiler中发现item, cudaMemCpyAsync这些函数调用的时候，那么就需要去留意这个D2G操作是否是必不可少的。如果能去除这个操作，就尽量把它去掉。
+**Device2Host问题的信号**：当在Profiler中发现item, cudaMemCpyAsync这些函数调用的时候，那么就需要去留意这个D2H操作是否是必不可少的。如果能去除这个操作，就尽量把它去掉。
 
 **使用torch.compile**：通过它，将模型从Eager模式编译成Graph模式，提高模型的运行效率：
 
