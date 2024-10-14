@@ -366,7 +366,7 @@ Begin fine tune...
 Epoch  1 - Train accuracy: 99.70%, Train loss: 0.013348; Test accuracy: 99.90%, Test loss: 0.005066
 Save model to ./VegetableResnet50.ckpt
 Epoch  2 - Train accuracy: 99.93%, Train loss: 0.003862; Test accuracy: 99.90%, Test loss: 0.003799
-Validation: 99.96666666666667%, 0.003069976973252546整体效果比前一个例子的全部使用全连接层来的好。如果图像复杂的话，效果会有更明显提升。
+Validation: 99.96666666666667%, 0.003069976973252546
 ```
 
 只不过微调跑起来太慢了，每一轮需要耗不少的时间。
