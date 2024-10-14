@@ -226,7 +226,7 @@ if __name__ == '__main__':
 经过10次迭代之后，可以得到：
 
 ```shell
-Epoch 10 - Train accuracy: 99.56%, Train loss: 0.013176; Test accuracy: 99.20%, Test loss: 0.032355准确率其实还是可以的，但仅限于简单的图像识别，而且后面有更好的CNN方法来处理图像(计算机视觉)问题。
+Epoch 10 - Train accuracy: 99.56%, Train loss: 0.013176; Test accuracy: 99.20%, Test loss: 0.032355
 ```
 
 
