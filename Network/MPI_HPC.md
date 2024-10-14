@@ -210,7 +210,7 @@ Rank 0: Recv data 14 from rank 3
 
 用下面这张图来解释一下这段代码做了些什么：
 
-![mpi_send_recv.png](D:\Git\Mine\docs\Assets\mpi_send_recv.png)
+![mpi_send_recv.png](https://github.com/yuchuanwang/docs/blob/main/Assets/mpi_send_recv.png)
 
 一共运行了4个进程并行工作，进程rank 0把11发送给下一个进程rank 1；rank 1收到后，将数据增加1之后，按顺序发给下一个进程rank 2；以此类推，最后一个进程再把最终的数据发送回rank 0。由此构成了一个环形的Send/Recv操作。
 
@@ -297,7 +297,7 @@ Rank 2: new data is 10
 
 这个代码执行的操作如下图所示：
 
-![mpi_bcast.png](D:\Git\Mine\docs\Assets\mpi_bcast.png)
+![mpi_bcast.png](https://github.com/yuchuanwang/docs/blob/main/Assets/mpi_bcast.png)
 
 rank 0把数据10，广播到了通信域内的其他所有rank。
 
@@ -400,7 +400,7 @@ After gather, the data in root rank is:
 
 具体过程如下图所示：
 
-![mpi_gather.png](D:\Git\Mine\docs\Assets\mpi_gather.png)
+![mpi_gather.png](https://github.com/yuchuanwang/docs/blob/main/Assets/mpi_gather.png)
 
 MPI_Gather收集数据时，是做了一个假设：每个rank所发过来的的数据所占空间一致。针对每个rank的数据长度不一致的情况，可以使用MPI_Gatherv函数。
 
@@ -502,7 +502,7 @@ Rank 3: scatter value 400
 
 具体过程如下图所示：
 
-![mpi_scatter.png](D:\Git\Mine\docs\Assets\mpi_scatter.png)
+![mpi_scatter.png](https://github.com/yuchuanwang/docs/blob/main/Assets/mpi_scatter.png)
 
 和MPI_Gatherv类似，如果需要给每个rank分散不同长度的数据，可以使用MPI_Scatterv函数。
 
@@ -587,7 +587,7 @@ Rank 0: Reduce average 250
 
 该代码执行的操作如下图所示：
 
-![mpi_reduce.png](D:\Git\Mine\docs\Assets\mpi_reduce.png)
+![mpi_reduce.png](https://github.com/yuchuanwang/docs/blob/main/Assets/mpi_reduce.png)
 
 每个rank将各自的数据发送到rank 0，然后rank 0进行求和操作 (代码里面还带了求平均值的操作，MPI本身不带求均值的操作符)。
 
@@ -690,7 +690,7 @@ Rank 3: Receive data: 22
 
 具体过程如下图所示，不同进程里，相同颜色的数字进行加法操作(Reduce)。然后每个进程收到一种颜色的结果(Scatter)。
 
-![mpi_reduce_scatter.png](D:\Git\Mine\docs\Assets\mpi_reduce_scatter.png)
+![mpi_reduce_scatter.png](https://github.com/yuchuanwang/docs/blob/main/Assets/mpi_reduce_scatter.png)
 
 下一个操作是All Gather。
 
@@ -784,7 +784,7 @@ After allgather, the data in rank 2
 
 
 
-![mpi_allgather.png](D:\Git\Mine\docs\Assets\mpi_allgather.png)
+![mpi_allgather.png](https://github.com/yuchuanwang/docs/blob/main/Assets/mpi_allgather.png)
 
 
 
@@ -891,7 +891,7 @@ Rank 3: Recv data:
 
 
 
-![mpi_alltoall.png](D:\Git\Mine\docs\Assets\mpi_alltoall.png)
+![mpi_alltoall.png](https://github.com/yuchuanwang/docs/blob/main/Assets/mpi_alltoall.png)
 
 
 
@@ -984,7 +984,7 @@ Rank 1: Reduce average 250
 
 
 
-![mpi_allreduce.png](D:\Git\Mine\docs\Assets\mpi_allreduce.png)
+![mpi_allreduce.png](https://github.com/yuchuanwang/docs/blob/main/Assets/mpi_allreduce.png)
 
 
 
