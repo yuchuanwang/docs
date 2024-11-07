@@ -74,9 +74,14 @@
    - [从零开始训练大语言模型的最佳实践](./PyTorch/Training_LLMs.md)
 
    - [Llama 3 + LangChain + HuggingFace 实现本地部署RAG](./PyTorch/Llama3_RAG.md)
-      
 
-7. eBPF/XDP相关
+      
+7. 其它
+
+   - [Kubernetes Device Plugin开发简介](./Others/dummy_device_plugin.md)
+
+
+8. eBPF/XDP相关
 
    Coming soon...
    
