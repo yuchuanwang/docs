@@ -10,7 +10,7 @@
 
 
 
-![time_span.png](D:\time_span.png)
+![time_span.png](https://github.com/yuchuanwang/docs/blob/main/Assets/time_span.png)
 
 
 
