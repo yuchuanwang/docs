@@ -27,6 +27,9 @@
    - [Kubernetes CNI之Flannel网络模型分析](./Network/Kubernetes_Flannel_Network.md)
   
    - [MPI高性能计算和集合通信编程](./Network/MPI_HPC.md)
+  
+   - [从零实现一个集合通信库：Mini CCL 设计与实现](./Network/mini_ccl.md)
+
 
 
 4. C++杂记
